@@ -6,18 +6,14 @@
     <script type="text/javascript" src="../../dist/oflow.js"></script>
     <script type="text/javascript" src="colors.js"></script>
 
-    <!-- DEBUG -->
-    <script type="text/javascript" src="../../src/webcam.js"></script>
-
     <script type="text/javascript">
     function main() {
         var zoneSize = 4,
             videoElement = document.getElementById('videoOut'),
             videoWidth = videoElement.videoWidth,
             videoHeight = videoElement.videoHeight;
-            webcam = new WebCam(videoElement),
+            webcam = new oflow.WebCam(videoElement),
             worker = new Worker("flowWorker.js");
-            // webCamFlow = new oflow.WebCamFlow(videoElement, zoneSize),
             canvas = document.getElementById('scene'),
             ballCanvas = document.getElementById('ballScene'),
             sceneCtx = canvas.getContext('2d'),
