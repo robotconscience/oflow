@@ -399,6 +399,7 @@ function VideoFlow(defaultVideoTag, zoneSize) {
         height,
         oldImage,
         loopId,
+        smoothing = .5,
         calculator = new FlowCalculator(zoneSize || 8),
         
         requestAnimFrame = window.requestAnimationFrame       ||
@@ -431,7 +432,21 @@ function VideoFlow(defaultVideoTag, zoneSize) {
                     callback(zones);
                 });
             } 
-            oldImage = newImage;
+            if(oldImage && newImage)
+            {
+                var msmooth = 1 - smoothing;
+                // console.log( oldImage.length, newImage.length );
+                for(var i=0; i<oldImage.length; i++)
+                {
+                    oldImage[i] = smoothing * oldImage[i] + msmooth * newImage[i];
+                }
+            }
+            else{
+
+                oldImage = newImage;   
+            }
+
+
         },
 
         initView = function () {
