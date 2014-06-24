@@ -193,9 +193,15 @@ FlowCalculator.prototype.calculate = function (oldImage, newImage, width, height
     var hMax = height - step - 1;
     var globalY, globalX, localY, localX;
 
+    var index = 0, total_delta = 0;
+
     for (globalY = step + 1; globalY < hMax; globalY += winStep) {
         for (globalX = step + 1; globalX < wMax; globalX += winStep) {
             A2 = A1B2 = B1 = C1 = C2 = 0;
+
+            // TODO: probably should use grey scale, for now it's red val I think...
+            index = globalY * width * 4 + globalX * 4;
+            total_delta += Math.abs(newImage[index] - oldImage[index]);
 
             for (localY = -step; localY <= step; localY++) {
                 for (localX = -step; localX <= step; localX++) {
@@ -249,7 +255,8 @@ FlowCalculator.prototype.calculate = function (oldImage, newImage, width, height
     return {
         zones : zones,
         u : uu / zones.length,
-        v : vv / zones.length
+        v : vv / zones.length,
+        total_delta: total_delta
     };
 };
 exports.FlowCalculator = FlowCalculator;
@@ -391,6 +398,7 @@ var VideoFlow;
 
  
 function VideoFlow(defaultVideoTag, zoneSize) {
+    this.smoothing = .75;
     var calculatedCallbacks = [],
         canvas,
         video = defaultVideoTag,
@@ -399,7 +407,6 @@ function VideoFlow(defaultVideoTag, zoneSize) {
         height,
         oldImage,
         loopId,
-        smoothing = .5,
         calculator = new FlowCalculator(zoneSize || 8),
         
         requestAnimFrame = window.requestAnimationFrame       ||
@@ -434,20 +441,21 @@ function VideoFlow(defaultVideoTag, zoneSize) {
             } 
             if(oldImage && newImage)
             {
-                var msmooth = 1 - smoothing;
+                // TODO: we probably should incorperate frame rate into the smo0thing
+                var msmooth = 1 - this.smoothing;
                 // console.log( oldImage.length, newImage.length );
                 for(var i=0; i<oldImage.length; i++)
                 {
-                    oldImage[i] = smoothing * oldImage[i] + msmooth * newImage[i];
+                    oldImage[i] = this.smoothing * oldImage[i] + msmooth * newImage[i];
                 }
             }
-            else{
-
+            else
+            {
                 oldImage = newImage;   
             }
 
 
-        },
+        }.bind(this),
 
         initView = function () {
             width = video.videoWidth;
@@ -578,6 +586,11 @@ function WebCamFlow(defaultVideoTag, zoneSize) {
         if (videoTag) { videoTag.pause(); }
         if (localStream) { localStream.stop(); }
     };
+
+    this.getVideoFlow = function()
+    {
+        return videoFlow;
+    }
 }
 exports.WebCamFlow = WebCamFlow;
 }());
